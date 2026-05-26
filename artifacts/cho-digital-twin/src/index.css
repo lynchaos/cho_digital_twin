@@ -569,3 +569,198 @@
   color: hsl(var(--foreground));
 }
 .about-list li { margin-bottom: 0.3rem; }
+
+/* ──────────────────────────────────────────────────────────────────────────────
+   Simulator — parameter editor
+───────────────────────────────────────────────────────────────────────────── */
+
+.params-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.param-modified-dot {
+  color: #d97706;
+  margin-left: 0.3rem;
+  font-size: 0.7rem;
+}
+
+.reset-all-btn {
+  font-size: 0.7rem;
+  padding: 0.2rem 0.5rem;
+  border: 1px solid hsl(var(--border));
+  border-radius: 3px;
+  background: hsl(var(--muted));
+  color: hsl(var(--muted-foreground));
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.reset-all-btn:hover { background: hsl(var(--accent)); color: hsl(var(--accent-foreground)); }
+
+/* ── Accordion groups ── */
+
+.param-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.param-group {
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: hsl(var(--card));
+}
+
+.param-group-modified {
+  border-color: #d97706;
+}
+
+.param-group-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.38rem 0.6rem;
+  background: hsl(var(--muted));
+  border: none;
+  cursor: pointer;
+  font-size: 0.78rem;
+  text-align: left;
+  transition: background 0.12s;
+}
+.param-group-header:hover { background: hsl(var(--accent)); }
+
+.param-group-name {
+  font-weight: 700;
+  color: hsl(var(--foreground));
+  flex: 1;
+}
+
+.param-group-meta {
+  font-size: 0.68rem;
+  color: hsl(var(--muted-foreground));
+  font-family: var(--app-font-mono);
+}
+
+.param-group-chevron {
+  font-size: 0.6rem;
+  color: hsl(var(--muted-foreground));
+  margin-left: 0.2rem;
+}
+
+/* ── Individual rows ── */
+
+.param-group-body {
+  padding: 0.5rem 0.6rem 0.6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.param-row {
+  padding: 0.35rem 0.45rem;
+  border-radius: 3px;
+  background: hsl(var(--background));
+  border: 1px solid transparent;
+}
+
+.param-row-modified {
+  border-color: #fcd34d;
+  background: hsl(48 100% 97%);
+}
+
+.param-row-top {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-bottom: 0.25rem;
+}
+
+.param-row-label {
+  font-family: var(--app-font-mono);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: hsl(var(--primary));
+  flex: 1;
+}
+
+.param-row-units {
+  font-size: 0.65rem;
+  color: hsl(var(--muted-foreground));
+  font-family: var(--app-font-mono);
+}
+
+.param-reset-btn {
+  font-size: 0.75rem;
+  padding: 0 0.25rem;
+  border: 1px solid #d97706;
+  border-radius: 2px;
+  background: transparent;
+  color: #d97706;
+  cursor: pointer;
+  line-height: 1.4;
+  transition: background 0.1s;
+}
+.param-reset-btn:hover { background: #fef3c7; }
+
+.param-row-inputs {
+  display: grid;
+  grid-template-columns: 1fr 5rem;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.param-slider {
+  width: 100%;
+  accent-color: hsl(var(--primary));
+}
+
+.param-num-input {
+  width: 100%;
+  font-family: var(--app-font-mono);
+  font-size: 0.72rem;
+  padding: 0.15rem 0.3rem;
+  border: 1px solid hsl(var(--border));
+  border-radius: 3px;
+  background: hsl(var(--card));
+  color: hsl(var(--foreground));
+  text-align: right;
+}
+.param-num-input:focus {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: -1px;
+  border-color: hsl(var(--ring));
+}
+
+.param-default-hint {
+  font-size: 0.65rem;
+  color: #92400e;
+  font-family: var(--app-font-mono);
+  margin-top: 0.15rem;
+}
+
+.param-reset-group-btn {
+  margin-top: 0.25rem;
+  width: 100%;
+  font-size: 0.7rem;
+  padding: 0.25rem;
+  border: 1px dashed hsl(var(--border));
+  border-radius: 3px;
+  background: transparent;
+  color: hsl(var(--muted-foreground));
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+}
+.param-reset-group-btn:hover {
+  background: hsl(var(--muted));
+  color: hsl(var(--foreground));
+}
+
+/* sim-info warn */
+.sim-info-warn {
+  color: #92400e;
+  font-weight: 600;
+}
