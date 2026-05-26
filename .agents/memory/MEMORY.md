@@ -1,0 +1,2 @@
+- [CHO Digital Twin — q_p unit equivalence](cho-qp-units.md) — q_p [mg/L/(Mc/mL)/day] is numerically equal to q_p_real [pg/cell/day]; defaults must be ~10–50, not 0.01.
+- [CHO Digital Twin — μ_net nutrient coupling](cho-nutrient-coupling.md) — sigmoid-only μ_net gives unphysical VCD (42+ Mc/mL); Monod nutrient coupling added as NN substitute, brings VCD to realistic 2–5 Mc/mL.

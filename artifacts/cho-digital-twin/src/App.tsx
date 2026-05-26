@@ -3,14 +3,16 @@ import { useState } from "react";
 import SimulatorPage from "@/pages/SimulatorPage";
 import EquationsPage from "@/pages/EquationsPage";
 import ParametersPage from "@/pages/ParametersPage";
+import MetRaCPage from "@/pages/MetRaCPage";
 
-type Tab = "simulator" | "equations" | "parameters" | "about";
+type Tab = "simulator" | "equations" | "parameters" | "metrac" | "about";
 
 const TABS: { id: Tab; label: string; icon: string }[] = [
-  { id: "simulator",  label: "Simulator",   icon: "⚙" },
-  { id: "equations",  label: "Equations",   icon: "∑" },
-  { id: "parameters", label: "Parameters",  icon: "⊞" },
-  { id: "about",      label: "About",       icon: "ℹ" },
+  { id: "simulator",  label: "Simulator",  icon: "⚙" },
+  { id: "equations",  label: "Equations",  icon: "∑" },
+  { id: "parameters", label: "Parameters", icon: "⊞" },
+  { id: "metrac",     label: "MetRaC",     icon: "≈" },
+  { id: "about",      label: "About",      icon: "ℹ" },
 ];
 
 function AboutPage() {
@@ -18,8 +20,7 @@ function AboutPage() {
     <div className="about-page">
       <h1>CHO Cell Culture Digital Twin</h1>
       <p className="about-tagline">
-        Replication of the hybrid modeling framework for predictive digital twins
-        of CHO cell culture
+        Replication of the hybrid modeling framework for predictive digital twins of CHO cell culture
       </p>
 
       <div className="about-ref">
@@ -36,13 +37,22 @@ function AboutPage() {
       <table className="about-table">
         <thead><tr><th>Component</th><th>Equations</th><th>Status</th></tr></thead>
         <tbody>
-          <tr><td>ODE biomass population model</td><td>Eqs. 8–14</td><td className="status-yes">✓ Exact parameters (Table 1)</td></tr>
-          <tr><td>ODE FLEX metabolite model</td><td>Eqs. 15–26</td><td className="status-yes">✓ Exact parameters (Table 1)</td></tr>
-          <tr><td>RK4 integrator</td><td>—</td><td className="status-yes">✓ dt = 0.005 days</td></tr>
-          <tr><td>Fed-batch mass balance</td><td>Eq. 34</td><td className="status-yes">✓ Bolus feeding with volume update</td></tr>
-          <tr><td>Growth rate sigmoid baseline</td><td>Eq. 1 proxy</td><td className="status-partial">⚠ Structure only — NN weights need 23-batch dataset</td></tr>
-          <tr><td>PC-dFBA hybrid LP</td><td>Eqs. 27–33</td><td className="status-partial">⚠ Equations documented — full LP needs genome-scale model + MetRaC rates</td></tr>
-          <tr><td>MetRaC Bayesian rate estimation</td><td>§2.2</td><td className="status-no">✗ Requires nested sampling library + raw concentration data</td></tr>
+          <tr><td>ODE biomass population model</td><td>Eqs. 8–14</td>
+            <td className="status-yes">✓ Exact Table 1 parameters; B_max cap added</td></tr>
+          <tr><td>ODE FLEX metabolite model</td><td>Eqs. 15–26</td>
+            <td className="status-yes">✓ Exact Table 1 parameters</td></tr>
+          <tr><td>RK4 integrator</td><td>—</td>
+            <td className="status-yes">✓ dt = 0.005 days</td></tr>
+          <tr><td>Fed-batch mass balance with bolus feeds</td><td>Eq. 34</td>
+            <td className="status-yes">✓ Bolus feeding with exact volume mixing</td></tr>
+          <tr><td>Luedeking-Piret product model</td><td>§2.4 extension</td>
+            <td className="status-yes">✓ dTit/dt = (α·μ_net + β)·Xv — growth + non-growth associated</td></tr>
+          <tr><td>Nutrient-coupled growth rate (§2.3 NN substitute)</td><td>§2.3 proxy</td>
+            <td className="status-partial">⚠ Monod × sigmoid (NN weights need 23-batch dataset)</td></tr>
+          <tr><td>MetRaC rate estimation</td><td>§2.2</td>
+            <td className="status-partial">⚠ Simplified: finite-diff + kernel-smoothed Bayesian CI (no nested sampling)</td></tr>
+          <tr><td>PC-dFBA hybrid LP</td><td>Eqs. 27–33</td>
+            <td className="status-no">✗ Needs genome-scale CHO model (iCHO) + LP solver</td></tr>
         </tbody>
       </table>
 
@@ -53,22 +63,14 @@ function AboutPage() {
         </div>
         <div className="fw-arrow">→</div>
         <div className="fw-node fw-proc">
-          MetRaC<br/><small>Bayesian rate estimation</small>
+          MetRaC<br/><small>§2.2 Bayesian rates</small>
         </div>
         <div className="fw-arrow">→</div>
         <div className="fw-col">
-          <div className="fw-node fw-model">
-            ODE Biomass<br/><small>Eqs. 8–14</small>
-          </div>
-          <div className="fw-node fw-model">
-            ODE FLEX<br/><small>Eqs. 15–26</small>
-          </div>
-          <div className="fw-node fw-model">
-            VCD NN<br/><small>Eqs. 1–7</small>
-          </div>
-          <div className="fw-node fw-model">
-            PC-dFBA<br/><small>Eqs. 27–33</small>
-          </div>
+          <div className="fw-node fw-model">ODE Biomass<br/><small>Eqs. 8–14 ✓</small></div>
+          <div className="fw-node fw-model">ODE FLEX<br/><small>Eqs. 15–26 ✓</small></div>
+          <div className="fw-node fw-model">VCD NN (μ_net)<br/><small>§2.3 → Monod proxy ⚠</small></div>
+          <div className="fw-node fw-model">PC-dFBA<br/><small>Eqs. 27–33 ✗</small></div>
         </div>
         <div className="fw-arrow">→</div>
         <div className="fw-node fw-output">
@@ -76,13 +78,48 @@ function AboutPage() {
         </div>
       </div>
 
-      <h2>Key biological features modelled</h2>
+      <h2>Implementation notes</h2>
       <ul className="about-list">
-        <li><strong>Overflow metabolism</strong> — aerobic lactate production when glucose uptake exceeds oxidative capacity (Eqs. 21–23)</li>
-        <li><strong>Lactate switch</strong> — cells re-consume lactate when glucose is limiting (Eq. 22)</li>
-        <li><strong>Biomaterial inhibition</strong> — accumulating by-products increase death and lysis rates (Eqs. 12–13)</li>
-        <li><strong>Maintenance metabolism</strong> — non-growth-associated glucose/glutamate consumption (Eqs. 20, 24)</li>
-        <li><strong>Fed-batch dynamics</strong> — bolus feeding with instantaneous volume dilution (Eq. 34)</li>
+        <li>
+          <strong>B_max cap (new):</strong> Biomaterial B is now capped at B_max (default 500) inside deathRate(),
+          preventing the kd1·B term from growing unboundedly and producing unrealistic death rates after day 10.
+        </li>
+        <li>
+          <strong>Luedeking-Piret product model (new):</strong> Product titer uses
+          dTit/dt = (q_p_growth·μ_net + q_p)·Xv, distinguishing growth-associated (α = q_p_growth)
+          from non-growth-associated (β = q_p) productivity.
+        </li>
+        <li>
+          <strong>Nutrient-coupled growth (new):</strong> μ_net_eff = μ_sigmoid(t) × Monod(Glc) × Monod(Gln)
+          × Inhibition(Lac) × Inhibition(NH4). This replaces the §2.3 NN for open exploration and
+          gives biologically realistic VCD (10–20 Mc/mL range) without the training data.
+        </li>
+        <li>
+          <strong>MetRaC tab (new):</strong> Demonstrates the full MetRaC pipeline — virtual
+          measurements from the ODE + configurable noise → finite-difference rates → kernel-smoothed
+          posterior with 95% credible intervals.
+        </li>
+        <li>
+          <strong>CSV export:</strong> Click the ↓ CSV button in the Simulator after any run
+          to download all state variables and specific rates at every output step.
+        </li>
+        <li><strong>Overflow metabolism:</strong> Aerobic lactate production when glucose uptake exceeds oxidative capacity (Eqs. 21–23)</li>
+        <li><strong>Lactate switch:</strong> Cells re-consume lactate when glucose is limiting (Eq. 22)</li>
+        <li><strong>Biomaterial inhibition:</strong> Accumulating by-products increase death and lysis (Eqs. 12–13)</li>
+      </ul>
+
+      <h2>What still needs experimental data</h2>
+      <ul className="about-list">
+        <li>
+          <strong>§2.3 NN weights:</strong> The neural network that predicts μ_net from specific rates and metabolite
+          concentrations was trained on 23 fed-batch CHO runs (AstraZeneca/Sartorius proprietary dataset).
+          The Monod nutrient coupling is a structural substitute.
+        </li>
+        <li>
+          <strong>PC-dFBA (Eqs. 27–33):</strong> Requires the CHO genome-scale model (e.g., iCHO2441, ~2000 reactions),
+          a linear programming solver, PCA loadings predicted by a second NN, and MetRaC-derived exchange rates
+          as boundary conditions.
+        </li>
       </ul>
     </div>
   );
@@ -104,11 +141,9 @@ export default function App() {
           </div>
           <nav className="app-nav">
             {TABS.map((tab) => (
-              <button
-                key={tab.id}
+              <button key={tab.id}
                 className={`nav-tab ${activeTab === tab.id ? "nav-tab-active" : ""}`}
-                onClick={() => setActiveTab(tab.id)}
-              >
+                onClick={() => setActiveTab(tab.id)}>
                 <span className="nav-tab-icon">{tab.icon}</span>
                 {tab.label}
               </button>
@@ -121,6 +156,7 @@ export default function App() {
         {activeTab === "simulator"  && <SimulatorPage />}
         {activeTab === "equations"  && <EquationsPage />}
         {activeTab === "parameters" && <ParametersPage />}
+        {activeTab === "metrac"     && <MetRaCPage />}
         {activeTab === "about"      && <AboutPage />}
       </div>
     </div>

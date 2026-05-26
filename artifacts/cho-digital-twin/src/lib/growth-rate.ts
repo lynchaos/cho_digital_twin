@@ -1,70 +1,77 @@
 
 /**
- * Sigmoid-Baseline Growth Rate Model
+ * Growth Rate Model
  *
- * Section 2.3 — Neural Network for VCD prediction (proxy component)
+ * The paper (§2.3) uses a neural network to predict μ_net from metabolite
+ * concentrations and specific rates. Since the NN weights require the
+ * proprietary 23-batch dataset, this module provides two alternatives:
  *
- * The paper's VCD predictor (Eq. 1) decomposes μ_net into:
- *   1. A sigmoid baseline — mean growth rate across all training batches
- *   2. A deviation correction — neural network output tailored to culture conditions
- *
- * Since the NN weights require the proprietary training dataset (23 CHO batches),
- * we implement the BASELINE component exactly (four fitted sigmoid functions)
- * and allow the user to tune it to explore the model sensitivity.
- *
- * Baseline (Eq. 1 proxy):
- *   μ_net(t) = Σ_{k=1}^{4} a_k · σ(b_k · (t − c_k))
- *
- * where σ(x) = 1 / (1 + exp(−x))   (standard logistic function)
+ *  1. SIGMOID BASELINE — time-driven sum-of-sigmoids (Eq. 1 structure)
+ *  2. NUTRIENT-COUPLED BASELINE — sigmoid × Monod limitations
+ *     (§2.3 NN substitute: captures nutrient depletion / inhibition feedback)
  */
 
+import { type NutrientCouplingParams } from "./parameters";
+
+// ─── Sigmoid baseline ────────────────────────────────────────────────────────
+
 export interface SigmoidComponent {
-  a: number;  // amplitude (can be negative)
+  a: number;  // amplitude
   b: number;  // steepness [day⁻¹]
-  c: number;  // inflection point [day]
+  c: number;  // inflection day
 }
 
-/** Standard logistic sigmoid function */
 export function sigmoid(x: number): number {
-  if (x > 500) return 1;
+  if (x >  500) return 1;
   if (x < -500) return 0;
   return 1 / (1 + Math.exp(-x));
 }
 
-/**
- * Evaluate the sum-of-sigmoids baseline for μ_net at time t.
- *
- * @param t          time in days
- * @param components array of sigmoid component parameters
- */
 export function sigmaBaseline(t: number, components: SigmoidComponent[]): number {
-  return components.reduce((sum, { a, b, c }) => sum + a * sigmoid(b * (t - c)), 0);
+  return components.reduce((s, { a, b, c }) => s + a * sigmoid(b * (t - c)), 0);
 }
 
-/**
- * Build an array of μ_net values at the given time points.
- * Values are clipped to a minimum of 1e-5 day⁻¹ (biological floor).
- */
-export function buildMuNetTrajectory(
-  times: number[],
-  components: SigmoidComponent[],
-): number[] {
+export function buildMuNetTrajectory(times: number[], components: SigmoidComponent[]): number[] {
   return times.map((t) => sigmaBaseline(t, components));
 }
 
 /**
- * Default sigmoid component parameters calibrated to reproduce typical CHO fed-batch
- * growth dynamics:
- *   • Exponential phase:  days 0–5,  μ ≈ 0.45–0.75 day⁻¹
- *   • Stationary phase:   days 6–9,  μ ≈ 0.10–0.20 day⁻¹
- *   • Death phase:        days 10–14, μ ≈ −0.05 to −0.10 day⁻¹
- * Peak VCD ~ 14–16 × 10⁶ cells/mL  (day 7–8)
- *
- * These are representative values; the paper learns them from 21 training batches.
+ * Default sigmoid components calibrated to typical CHO fed-batch profile.
+ * These replicate the *structure* of Eq. 1; actual NN weights need the paper's dataset.
  */
 export const DEFAULT_SIGMOID_COMPONENTS: SigmoidComponent[] = [
-  { a:  0.85, b: 1.4, c:  1.5 },  // growth onset
-  { a: -0.95, b: 0.9, c:  7.0 },  // growth decline
-  { a:  0.25, b: 0.5, c:  4.0 },  // mid-culture support
-  { a: -0.18, b: 1.2, c: 11.0 },  // late-culture death
+  { a:  0.85, b: 1.4, c:  1.5 },
+  { a: -0.95, b: 0.9, c:  7.0 },
+  { a:  0.25, b: 0.5, c:  4.0 },
+  { a: -0.18, b: 1.2, c: 11.0 },
 ];
+
+// ─── Nutrient-coupled growth rate ────────────────────────────────────────────
+//
+//  μ_net_coupled(t) = μ_sigmoid(t)
+//                   × [Glc / (Km_Glc_growth + Glc)]      ← Monod, glucose
+//                   × [Gln / (Km_Gln_growth + Gln)]      ← Monod, glutamine
+//                   × [Ki_Lac / (Ki_Lac + Lac)]           ← lactate inhibition
+//                   × [Ki_NH4 / (Ki_NH4 + NH4)]           ← ammonium inhibition
+//
+//  This approximates the environmental feedback that the paper's NN learns from
+//  data. The Km/Ki values are not from Table 1; they use typical CHO literature
+//  values (see parameters.ts NutrientCouplingParams defaults).
+
+export function nutrientCoupledMuNet(
+  mu_base: number,
+  Glc: number,
+  Gln: number,
+  Lac: number,
+  NH4: number,
+  nc: NutrientCouplingParams,
+): number {
+  if (!nc.enabled || mu_base <= 0) return mu_base;
+
+  const f_Glc = Math.max(0, Glc) / (nc.Km_Glc_growth + Math.max(0, Glc));
+  const f_Gln = Math.max(0, Gln) / (nc.Km_Gln_growth + Math.max(0, Gln));
+  const f_Lac = nc.Ki_Lac_growth / (nc.Ki_Lac_growth + Math.max(0, Lac));
+  const f_NH4 = nc.Ki_NH4_growth / (nc.Ki_NH4_growth + Math.max(0, NH4));
+
+  return mu_base * f_Glc * f_Gln * f_Lac * f_NH4;
+}
