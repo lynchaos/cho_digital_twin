@@ -36,6 +36,10 @@ export interface ModelParams {
   // ── Ammonium (Eq. 26) ─────────────────────────────────────────────────────
   Y_NH4_Glu: number;
   Y_NH4_Gln: number;
+  // ── Glutamine chemical degradation (non-enzymatic, 37 °C) ─────────────────
+  k_Gln_deg: number;     // Gln → pyroglutamate + NH₃  [day⁻¹]
+  // ── Gln → Glu transamination yield ────────────────────────────────────────
+  Y_Glu_Gln: number;     // Glu produced per Gln consumed via GLS  [mol/mol]
   // ── Product — Luedeking-Piret: dTit/dt = (q_p_growth·μ + q_p) · Xv ──────
   q_p: number;           // non-growth-associated productivity  [mg·L⁻¹·(Mc/mL)⁻¹·day⁻¹]
   q_p_growth: number;    // growth-associated productivity      [mg·L⁻¹·(Mc/mL)⁻¹]
@@ -69,6 +73,10 @@ export const DEFAULT_MODEL_PARAMS: ModelParams = {
   // Ammonium (Table 1)
   Y_NH4_Glu:     20.8763687,
   Y_NH4_Gln:      0.722160623,
+  // Glutamine chemical degradation (literature: non-enzymatic at 37 °C, pH 7.4)
+  k_Gln_deg:      0.006,        // ~0.6%/day  (Tritsch & Moore 1986; conservative)
+  // Gln → Glu transamination yield (GLS pathway, CHO literature)
+  Y_Glu_Gln:      0.35,         // 35% of Gln consumed yields Glu via GLS
   // Product (literature: typical CHO mAb, Luedeking-Piret)
   // Units: q_p_model [mg/L/(Mc/mL)/day] ≡ q_p_real [pg/cell/day]  (exact unit equivalence)
   // Typical CHO mAb: 10–50 pg/cell/day total; 60–80% non-growth-associated

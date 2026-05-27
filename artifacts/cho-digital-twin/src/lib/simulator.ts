@@ -12,8 +12,9 @@
 import { rk4Step } from "./ode-solver";
 import { choODE, type FeedInput } from "./models";
 import {
-  sigmaBaseline, nutrientCoupledMuNet, type SigmoidComponent,
+  sigmaBaseline, nutrientCoupledMuNet, nnMuNet, type SigmoidComponent, type MuNetMode,
 } from "./growth-rate";
+import type { NNWeights } from "./neural-net";
 import {
   DEFAULT_MODEL_PARAMS, DEFAULT_NUTRIENT_COUPLING,
   type ModelParams, type NutrientCouplingParams,
@@ -41,6 +42,8 @@ export interface SimulationConfig {
   modelParams: ModelParams;
   runDays: number;
   outputInterval: number;          // [days]
+  muNetMode?: MuNetMode;           // default "nutrient-coupled"
+  nnWeights?: NNWeights | null;    // required when muNetMode === "surrogate-nn"
 }
 
 export interface TimePoint {
@@ -49,15 +52,18 @@ export interface TimePoint {
   mu_net: number; mu_eff: number; kd: number; kl: number; volume: number;
   // specific rates (for MetRaC comparison)
   q_Glc: number; q_Lac: number; q_Gln: number; q_Glu: number; q_NH4: number;
+  q_p: number;   // product-specific rate [mg·L⁻¹·(Mc/mL)⁻¹·day⁻¹]
 }
 
 export interface NoisyMeasurement {
   t: number;
   Xv: number; Glc: number; Lac: number; Gln: number; Glu: number; NH4: number;
+  Tit?: number;    // product titer [mg/L] — optional (if Tit_cv > 0)
   volume: number;
   // true (noiseless) values for comparison
   Xv_true: number; Glc_true: number; Lac_true: number;
   Gln_true: number; Glu_true: number; NH4_true: number;
+  Tit_true?: number;
 }
 
 // ── Defaults ─────────────────────────────────────────────────────────────────
@@ -96,9 +102,15 @@ function computeMuNet(
   t: number, y: number[],
   muComponents: SigmoidComponent[],
   nc: NutrientCouplingParams,
+  mode: MuNetMode = "nutrient-coupled",
+  nnWeights: NNWeights | null | undefined = null,
 ): number {
-  const mu_base = sigmaBaseline(t, muComponents);
   const [, , , , Glc, Lac, Gln, , NH4] = y;
+  if (mode === "surrogate-nn") {
+    return nnMuNet(t, Glc, Gln, Lac, NH4, nc, muComponents, nnWeights ?? null);
+  }
+  const mu_base = sigmaBaseline(t, muComponents);
+  if (mode === "sigmoid") return mu_base;
   return nutrientCoupledMuNet(mu_base, Glc, Gln, Lac, NH4, nc);
 }
 
@@ -113,7 +125,8 @@ import {
 export function runSimulation(config: SimulationConfig): TimePoint[] {
   const { initialConditions: ic, initialVolume, feedBoluses,
           muNetComponents, nutrientCoupling: nc, modelParams: mp,
-          runDays, outputInterval } = config;
+          runDays, outputInterval,
+          muNetMode = "nutrient-coupled", nnWeights = null } = config;
 
   const dt = 0.005;
   const nOut = Math.round(runDays / outputInterval) + 1;
@@ -126,7 +139,7 @@ export function runSimulation(config: SimulationConfig): TimePoint[] {
   let t = 0, bolusIdx = 0;
 
   const record = (t: number, y: number[], vol: number) => {
-    const mu_net = computeMuNet(t, y, muNetComponents, nc);
+    const mu_net = computeMuNet(t, y, muNetComponents, nc, muNetMode, nnWeights);
     const kd_v   = deathRate(y[3], mp);
     const kl_v   = lysisRate(y[2], mp);
     const mu_eff = mu_net + kd_v;
@@ -143,6 +156,7 @@ export function runSimulation(config: SimulationConfig): TimePoint[] {
       Tit: Math.max(0, y[9]),
       mu_net, mu_eff, kd: kd_v, kl: kl_v, volume: vol,
       q_Glc: q_glc, q_Lac: q_lac, q_Gln: q_gln, q_Glu: q_glu, q_NH4: q_nh4,
+      q_p: mp.q_p_growth * Math.max(0, mu_net) + mp.q_p,
     });
   };
 
@@ -158,7 +172,7 @@ export function runSimulation(config: SimulationConfig): TimePoint[] {
       const stepDt = Math.min(dt, t_out - t);
       const feed: FeedInput = { F: 0, V: volume, Glc_feed: 0, Gln_feed: 0, Glu_feed: 0 };
       y = rk4Step(
-        (tt, yy) => choODE(tt, yy, computeMuNet(tt, yy, muNetComponents, nc), feed, mp),
+        (tt, yy) => choODE(tt, yy, computeMuNet(tt, yy, muNetComponents, nc, muNetMode, nnWeights), feed, mp),
         t, y, stepDt,
       );
       t += stepDt;
@@ -207,6 +221,7 @@ export interface MeasurementNoiseConfig {
   Glu_abs: number; // absolute noise σ for Glu [mM]
   NH4_abs: number; // absolute noise σ for NH4 [mM]
   sampleEvery: number; // sampling interval [days]
+  Tit_cv?: number; // relative noise for Titer (CV, e.g. 0.08 = 8%); omit = not measured
 }
 
 export const DEFAULT_NOISE_CONFIG: MeasurementNoiseConfig = {
@@ -217,6 +232,7 @@ export const DEFAULT_NOISE_CONFIG: MeasurementNoiseConfig = {
   Glu_abs: 0.08,
   NH4_abs: 0.1,
   sampleEvery: 1.0,
+  Tit_cv: 0.08,
 };
 
 /**
@@ -242,12 +258,16 @@ export function generateNoisyMeasurements(
     Gln_true: r.Gln,
     Glu_true: r.Glu,
     NH4_true: r.NH4,
+    Tit_true: r.Tit,
     Xv:  Math.max(0, randn(r.Xv,  r.Xv  * noise.Xv_cv)),
     Glc: Math.max(0, randn(r.Glc, noise.Glc_abs)),
     Lac: Math.max(0, randn(r.Lac, noise.Lac_abs)),
     Gln: Math.max(0, randn(r.Gln, noise.Gln_abs)),
     Glu: Math.max(0, randn(r.Glu, noise.Glu_abs)),
     NH4: Math.max(0, randn(r.NH4, noise.NH4_abs)),
+    Tit: noise.Tit_cv && noise.Tit_cv > 0
+      ? Math.max(0, randn(r.Tit, Math.max(r.Tit * noise.Tit_cv, 5)))
+      : undefined,
   }));
 }
 

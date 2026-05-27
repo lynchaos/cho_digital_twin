@@ -1,2 +1,4 @@
 - [CHO Digital Twin — q_p unit equivalence](cho-qp-units.md) — q_p [mg/L/(Mc/mL)/day] is numerically equal to q_p_real [pg/cell/day]; defaults must be ~10–50, not 0.01.
 - [CHO Digital Twin — μ_net nutrient coupling](cho-nutrient-coupling.md) — sigmoid-only μ_net gives unphysical VCD (42+ Mc/mL); Monod nutrient coupling added as NN substitute, brings VCD to realistic 2–5 Mc/mL.
+- [CHO Digital Twin — NN surrogate strategy](nn-import-strategy.md) — surrogate NN in neural-net.ts is standalone math; calibration teacher fn passed as parameter; export wrappers live in growth-rate.ts to avoid circular imports.
+- [CHO Digital Twin — MetRaC bolus discontinuity](metrac-bolus.md) — apply 10× σ inflation for finite-difference intervals spanning a feed bolus; bolus days passed from page; avoids large artefact rates at bolus transitions.

@@ -127,9 +127,13 @@ export function choODE(
 
   const dGlc = -q_glc * Math.max(0, Xv) + D * (feed.Glc_feed - Glc);
   const dLac =  q_lac * Math.max(0, Xv) - D * Lac;
-  const dGln = -q_gln * Math.max(0, Xv) + D * (feed.Gln_feed - Gln);
-  const dGlu = -q_glu * Math.max(0, Xv) + D * (feed.Glu_feed - Glu);
-  const dNH4 =  q_nh4 * Math.max(0, Xv) - D * NH4;
+  // Glutamine chemical degradation: Gln → pyroglutamate + NH₃ (non-enzymatic, 37 °C)
+  const gln_chem = p.k_Gln_deg * Math.max(0, Gln);
+
+  const dGln = -q_gln * Math.max(0, Xv) - gln_chem + D * (feed.Gln_feed - Gln);
+  // Glu balance: consumption + production from Gln→Glu transamination (GLS)
+  const dGlu = (-q_glu + p.Y_Glu_Gln * q_gln) * Math.max(0, Xv) + D * (feed.Glu_feed - Glu);
+  const dNH4 =  q_nh4 * Math.max(0, Xv) + gln_chem - D * NH4;
 
   // Product titer — Luedeking-Piret (growth-associated + non-growth-associated)
   //   dTit/dt = (q_p_growth · μ_net + q_p) · Xv − D · Tit

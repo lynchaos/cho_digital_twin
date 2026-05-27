@@ -4,14 +4,16 @@ import SimulatorPage from "@/pages/SimulatorPage";
 import EquationsPage from "@/pages/EquationsPage";
 import ParametersPage from "@/pages/ParametersPage";
 import MetRaCPage from "@/pages/MetRaCPage";
+import SweepPage from "@/pages/SweepPage";
 
-type Tab = "simulator" | "equations" | "parameters" | "metrac" | "about";
+type Tab = "simulator" | "equations" | "parameters" | "metrac" | "sweep" | "about";
 
 const TABS: { id: Tab; label: string; icon: string }[] = [
   { id: "simulator",  label: "Simulator",  icon: "⚙" },
   { id: "equations",  label: "Equations",  icon: "∑" },
   { id: "parameters", label: "Parameters", icon: "⊞" },
   { id: "metrac",     label: "MetRaC",     icon: "≈" },
+  { id: "sweep",      label: "Sweep",      icon: "⊹" },
   { id: "about",      label: "About",      icon: "ℹ" },
 ];
 
@@ -157,6 +159,7 @@ export default function App() {
         {activeTab === "equations"  && <EquationsPage />}
         {activeTab === "parameters" && <ParametersPage />}
         {activeTab === "metrac"     && <MetRaCPage />}
+        {activeTab === "sweep"      && <SweepPage />}
         {activeTab === "about"      && <AboutPage />}
       </div>
     </div>

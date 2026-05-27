@@ -181,7 +181,8 @@ export default function MetRaCPage() {
         ...noiseConfig, sampleEvery,
       });
       const outTimes = sim.map((r) => r.t);
-      const metrac = runMetRaC(measurements, noiseConfig, outTimes, bandwidth);
+      const bolusDay = DEFAULT_FEED_BOLUSES.map((f) => f.day);
+      const metrac = runMetRaC(measurements, noiseConfig, outTimes, bandwidth, bolusDay);
       setOdesim(sim);
       setMeas(measurements);
       setRates(metrac);
@@ -214,6 +215,8 @@ export default function MetRaCPage() {
   const glnRate  = makeRateData("q_Gln", "q_Gln_lo95", "q_Gln_hi95", "q_Gln");
   const gluRate  = makeRateData("q_Glu", "q_Glu_lo95", "q_Glu_hi95", "q_Glu");
   const nh4Rate  = makeRateData("q_NH4", "q_NH4_lo95", "q_NH4_hi95", "q_NH4");
+  const qpRate   = makeRateData("q_p",   "q_p_lo95",   "q_p_hi95",   "q_p");
+  const hasTit   = (noiseConfig.Tit_cv ?? 0) > 0;
 
   const nMeas = meas.length;
 
@@ -281,6 +284,10 @@ export default function MetRaCPage() {
             <NoiseSlider label="σ Gln"   value={noiseConfig.Gln_abs} min={0} max={1}    step={0.05} unit="mM" onChange={(v) => setNoise("Gln_abs", v)} />
             <NoiseSlider label="σ Glu"   value={noiseConfig.Glu_abs} min={0} max={0.5}  step={0.01} unit="mM" onChange={(v) => setNoise("Glu_abs", v)} />
             <NoiseSlider label="σ NH₄⁺"  value={noiseConfig.NH4_abs} min={0} max={1}    step={0.05} unit="mM" onChange={(v) => setNoise("NH4_abs", v)} />
+            <NoiseSlider label="Titer CV" value={noiseConfig.Tit_cv ?? 0} min={0} max={0.3} step={0.01} unit="" onChange={(v) => setNoise("Tit_cv", v)} />
+            <p className="ctrl-hint" style={{ marginTop: "0.2rem" }}>
+              Titer CV = 0 → q_p not estimated (set &gt; 0 to enable q_p chart)
+            </p>
           </section>
 
           <section className="ctrl-section">
@@ -352,6 +359,23 @@ export default function MetRaCPage() {
             <RateChart title="q_NH4 — Ammonium production rate" data={nh4Rate}
               color={C.NH4} unit="mM·Mc⁻¹·d⁻¹" />
           </div>
+
+          {hasTit && (
+            <>
+              <div className="metrac-section-label" style={{ marginTop: "1.25rem" }}>
+                q_p — Product-Specific Rate (Luedeking-Piret) — Titer CV = {((noiseConfig.Tit_cv ?? 0) * 100).toFixed(0)}%
+              </div>
+              <div className="metrac-rate-grid" style={{ gridTemplateColumns: "1fr" }}>
+                <RateChart title="q_p — Product-specific rate (α·μ + β)" data={qpRate}
+                  color="#8a6d1e" unit="mg·L⁻¹·(Mc/mL)⁻¹·d⁻¹" />
+              </div>
+              <p className="ctrl-hint" style={{ marginTop: "0.5rem" }}>
+                MetRaC estimates q_p = dTit/dt / Xv from noisy titer measurements.
+                Wide CI reflects titer measurement noise (CV = {((noiseConfig.Tit_cv ?? 0) * 100).toFixed(0)}%).
+                ODE truth (dashed) uses the Luedeking-Piret model: q_p = α·μ_net + β.
+              </p>
+            </>
+          )}
 
           <div className="sim-info" style={{ marginTop: "1rem" }}>
             <strong>How to read:</strong> The shaded 95% CI band is derived from Gaussian
