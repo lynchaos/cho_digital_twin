@@ -1530,3 +1530,494 @@
   background: #1d4ed8;
   color: #fff;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   GEM REDUCTION PAGE  (Antonakoudis & Richelle 2026)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.gem-page {
+  padding: 1.25rem 1.5rem 2.5rem;
+  max-width: 1300px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+/* ── Header ── */
+.gem-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.gem-title {
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 0.2rem;
+}
+.gem-subtitle {
+  font-size: 0.8rem;
+  color: #64748b;
+  margin: 0;
+}
+.gem-paper-link {
+  color: #1d4ed8;
+  text-decoration: underline;
+}
+.gem-kpi-row {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+}
+.gem-kpi {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0.45rem 0.9rem;
+  min-width: 80px;
+}
+.gem-kpi-val {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #1e293b;
+  line-height: 1.1;
+}
+.gem-kpi-val.gem-kpi-green { color: #15803d; }
+.gem-kpi-val.gem-kpi-red   { color: #dc2626; }
+.gem-kpi-lab {
+  font-size: 0.62rem;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-top: 0.15rem;
+}
+.gem-kpi-arrow {
+  font-size: 1.4rem;
+  color: #94a3b8;
+  padding: 0 0.1rem;
+}
+
+/* ── Algo box ── */
+.gem-algo-box {
+  background: #f1f5f9;
+  border-left: 3px solid #1d4ed8;
+  border-radius: 0 6px 6px 0;
+  padding: 0.6rem 0.9rem;
+  font-size: 0.78rem;
+  color: #334155;
+  line-height: 1.5;
+}
+.gem-algo-note {
+  color: #64748b;
+  font-size: 0.74rem;
+}
+
+/* ── Section label ── */
+.gem-section-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #94a3b8;
+}
+
+/* ── Pipeline ── */
+.gem-pipeline-track {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  overflow-x: auto;
+  padding: 0.4rem 0;
+}
+.gem-step-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  background: #f8fafc;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 0.65rem 0.7rem;
+  min-width: 110px;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s, transform 0.1s;
+  text-align: center;
+}
+.gem-step-card:hover {
+  border-color: var(--sc, #94a3b8);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  transform: translateY(-1px);
+}
+.gem-step-card.gem-step-active {
+  border-color: var(--sc, #1d4ed8);
+  background: #fff;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.1);
+}
+.gem-step-icon {
+  font-size: 1.2rem;
+  line-height: 1;
+}
+.gem-step-num {
+  font-size: 0.62rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #94a3b8;
+}
+.gem-step-name {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #1e293b;
+  line-height: 1.2;
+}
+.gem-step-method {
+  font-size: 0.63rem;
+  color: #64748b;
+  font-style: italic;
+}
+.gem-step-rxn {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--sc, #1d4ed8);
+  margin-top: 0.1rem;
+}
+.gem-step-tasks {
+  font-size: 0.63rem;
+  color: #64748b;
+}
+.gem-step-arrow {
+  font-size: 0.8rem;
+  color: #cbd5e1;
+  flex-shrink: 0;
+  padding: 0 0.1rem;
+}
+
+/* ── Step detail ── */
+.gem-step-detail {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-left: 4px solid #1d4ed8;
+  border-radius: 0 8px 8px 0;
+  padding: 0.8rem 1rem;
+  animation: gem-fade-in 0.15s ease;
+}
+@keyframes gem-fade-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.gem-step-detail-hd {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.4rem;
+  font-size: 0.82rem;
+  color: #1e293b;
+}
+.gem-method-badge {
+  font-size: 0.62rem;
+  font-weight: 600;
+  color: #fff;
+  background: #1d4ed8;
+  border-radius: 4px;
+  padding: 0.1rem 0.45rem;
+  white-space: nowrap;
+}
+.gem-step-detail-body {
+  font-size: 0.77rem;
+  color: #475569;
+  line-height: 1.55;
+  margin: 0 0 0.4rem;
+}
+.gem-step-detail-note {
+  font-size: 0.74rem;
+  color: #92400e;
+  background: #fef3c7;
+  border-radius: 4px;
+  padding: 0.3rem 0.6rem;
+  margin: 0.2rem 0 0.4rem;
+}
+.gem-step-chips {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+.gem-chip {
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  padding: 0.15rem 0.6rem;
+  font-size: 0.7rem;
+  color: #334155;
+  font-weight: 500;
+}
+
+/* ── Charts row ── */
+.gem-charts-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1rem;
+}
+@media (max-width: 900px) {
+  .gem-charts-row { grid-template-columns: 1fr; }
+}
+.gem-chart-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 0.85rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.gem-chart-title {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+}
+.gem-chart-sub {
+  font-size: 0.72rem;
+  color: #64748b;
+  line-height: 1.4;
+  margin: 0;
+}
+
+/* CI legend */
+.gem-ci-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-top: 0.5rem;
+}
+.gem-ci-chip {
+  font-size: 0.68rem;
+  color: #475569;
+  background: #f8fafc;
+  border-radius: 4px;
+  padding: 0.2rem 0.5rem;
+  border: 1px solid #e2e8f0;
+}
+.gem-ci-chip.gem-ci-opt {
+  background: #eff6ff;
+  border-color: #1d4ed8;
+  color: #1d4ed8;
+  font-weight: 600;
+}
+.gem-ci-chip.gem-ci-warn {
+  background: #fffbeb;
+  border-color: #f59e0b;
+  color: #92400e;
+}
+
+/* Subsystem bars */
+.gem-subsys-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  margin-top: 0.3rem;
+}
+.gem-subsys-row {
+  display: grid;
+  grid-template-columns: 130px 1fr 38px;
+  align-items: center;
+  gap: 0.5rem;
+}
+.gem-subsys-name {
+  font-size: 0.7rem;
+  color: #475569;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.gem-subsys-track {
+  height: 12px;
+  background: #f1f5f9;
+  border-radius: 6px;
+  overflow: hidden;
+}
+.gem-subsys-fill {
+  height: 100%;
+  border-radius: 6px;
+  transition: width 0.4s ease;
+}
+.gem-subsys-pct {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: #475569;
+  text-align: right;
+}
+
+/* Comparison table */
+.gem-cmp-table {
+  width: 100%;
+  font-size: 0.72rem;
+  border-collapse: collapse;
+  margin-top: 0.3rem;
+}
+.gem-cmp-table th {
+  text-align: left;
+  font-weight: 600;
+  color: #94a3b8;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.25rem 0.4rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+.gem-cmp-table td {
+  padding: 0.3rem 0.4rem;
+  color: #475569;
+  border-bottom: 1px solid #f1f5f9;
+}
+.gem-cmp-table .gem-td-num {
+  font-variant-numeric: tabular-nums;
+}
+.gem-cmp-table tr.gem-cmp-best td {
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-weight: 600;
+}
+.gem-best-badge {
+  display: inline-block;
+  margin-left: 0.3rem;
+  background: #1d4ed8;
+  color: #fff;
+  border-radius: 4px;
+  padding: 0.05rem 0.3rem;
+  font-size: 0.6rem;
+  font-weight: 700;
+  vertical-align: middle;
+}
+
+/* ── Lower row ── */
+.gem-lower-row {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 1rem;
+}
+@media (max-width: 800px) {
+  .gem-lower-row { grid-template-columns: 1fr; }
+}
+.gem-mets-card, .gem-eq-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 0.85rem 1rem;
+}
+.gem-mets-block { margin-top: 0.5rem; }
+.gem-mets-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #94a3b8;
+  margin-bottom: 0.35rem;
+}
+.gem-mets-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+.gem-met-chip {
+  font-size: 0.68rem;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  padding: 0.15rem 0.55rem;
+  color: #334155;
+}
+.gem-met-chip.gem-met-aux {
+  background: #fef9ec;
+  border-color: #f59e0b;
+  color: #78350f;
+}
+.gem-aux-star {
+  font-size: 0.55rem;
+  color: #d97706;
+  vertical-align: super;
+  margin-left: 1px;
+}
+.gem-met-chip.gem-met-cofactor {
+  background: #f0fdf4;
+  border-color: #86efac;
+  color: #166534;
+}
+.gem-met-chip.gem-met-product {
+  background: #eef2ff;
+  border-color: #a5b4fc;
+  color: #3730a3;
+  font-weight: 600;
+}
+
+/* Equations */
+.gem-eq-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+.gem-eq-block {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 0.55rem 0.7rem;
+}
+.gem-eq-label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: #1d4ed8;
+  margin-bottom: 0.3rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.gem-eq-pre {
+  font-family: "Fira Mono", "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.68rem;
+  color: #1e293b;
+  background: transparent;
+  margin: 0;
+  white-space: pre;
+  line-height: 1.55;
+  overflow-x: auto;
+}
+.gem-eq-note {
+  font-size: 0.72rem;
+  color: #475569;
+  background: #eff6ff;
+  border-radius: 6px;
+  padding: 0.5rem 0.7rem;
+  line-height: 1.45;
+  border: 1px solid #bfdbfe;
+}
+
+/* ── Link box ── */
+.gem-link-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+  background: #fff;
+  border: 1px solid #c7d2fe;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  font-size: 0.76rem;
+  color: #334155;
+  line-height: 1.5;
+}
+.gem-link-icon {
+  font-size: 1.4rem;
+  line-height: 1;
+  flex-shrink: 0;
+  margin-top: 0.05rem;
+}
+
+/* ── About page update: new fw-model-new ── */
+.fw-model-new {
+  border-color: #1d6fa5 !important;
+  color: #1d6fa5 !important;
+}
